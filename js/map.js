@@ -54,7 +54,12 @@ function buildPopup(map, wmsLayer, mapView){
   });
 }
 
+
+
+
+
 // init map
+var overLayerGroup;
 function buildMap(){
 
   // layers
@@ -65,11 +70,6 @@ function buildMap(){
     source: new ol.source.OSM()
   });
 
-  var wmsLayer = new ol.source.TileWMS({
-      url: 'https://geo.datos.gob.mx/geoserver/ows',
-      params: {'LAYERS': '', 'TILED': true},
-      serverType: 'geoserver'
-    });
 
   // start map view
   var mapView = new ol.View({
@@ -78,36 +78,52 @@ function buildMap(){
     zoom: 5
   })
 
+  // prepare layer groups
+  var baseLayerGroup = new ol.layer.Group({
+    'title': 'Mapas base',
+    layers: [osmLayer]
+  });
+
+  var overLayerGroup = new ol.layer.Group({
+    'title': 'Capas de datos',
+    layers: []
+  });
 
   // create map
   var map = new ol.Map({
-    layers: [osmLayer, new ol.layer.Tile({
-                  source: wmsLayer
-            })],
+    layers: [overLayerGroup, baseLayerGroup],
     target: "map",
     view: mapView
   });
 
+  // prepare NEW LAYER control
+  ol.inherits(AddLayerControl, ol.control.Control);
+  // add the control to the map
+  map.addControl(new AddLayerControl({}));
 
-  map.addWmsLayer = function(layerId){
-    var params = {
-      "LAYERS": "ckan:" + layerId
-    }
 
-    wmsLayer.updateParams(params);
+  // layers
+  var layerswitcher = new ol.control.LayerSwitcher({});
+  map.addControl(layerswitcher);
+  layerswitcher.showPanel();
+
+  map.addWmsLayer = function(layerId, title){
+    var newWmsLayer = new ol.layer.Tile({
+      title: title,
+      source: new ol.source.TileWMS({
+        url: 'https://geo.datos.gob.mx/geoserver/ows',
+        params: {'LAYERS': "ckan:" + layerId, 'TILED': true},
+        serverType: 'geoserver'
+      })
+    });
+
+    map.addOverlay(newWmsLayer);
+    overLayerGroup.getLayers().push(newWmsLayer);
+    layerswitcher.renderPanel();
+    // buildPopup(map, newWmsLayer, mapView);
 
     $("#newLayerDialog").modal("hide");
   }
 
-  // inherit base functionality from ol.control.Control
-  ol.inherits(AddLayerControl, ol.control.Control);
-  // add the control
-  map.addControl(new AddLayerControl({}));
-
-  buildPopup(map, wmsLayer, mapView);
-
-  var layerswitcher = new ol.control.LayerSwitcher({});
-  map.addControl(layerswitcher)
-
-  return map;
+  window.map = map;
 }

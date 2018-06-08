@@ -28,18 +28,18 @@ function searchLayerHandler(){
   ]
 
   api_geo_response.forEach(function(layer){
-    var html = "<a id='" + layer.geo_id + "' onclick='map.addWmsLayer(id)'>";
+    var html = "<a onclick='map.addWmsLayer(\"" + layer.geo_id + "\", \"" + layer.geo_title + "\")'>";
 
     html += "<b>" + layer.geo_title + "</b><br>"
     html += "<small>" + layer.abstract + "</small>"
 
     html += "</a>";
 
-    $("#layer_result_list").append(html)
+    $("#layer_result_list").append(html);
   })
 }
 
 
 $(function(){
-  window.map = buildMap();
+  buildMap();
 });
