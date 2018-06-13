@@ -1,0 +1,17 @@
+body{
+  margin-top: -75px;
+}
+
+.draw-point {
+  right: 3em;
+  top: .5em;
+}
+
+#layer_result_list a:hover{
+  cursor: pointer;
+}
+
+#layer_result_list a{
+  border: 1px solid silver;
+  display: block;
+}
